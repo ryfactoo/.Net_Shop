@@ -1,0 +1,128 @@
+﻿@model DotNet_lab_lista_10.ViewModesl.ShippingViewModel
+
+@{
+    ViewData["Title"] = "Order";
+    double totalSum = 0F;
+}
+
+<h1>Order</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Price)
+            </th>
+            <th>
+                SumPrice
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Category)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CartItems)
+        {
+            <tr id="item-@item.Id">
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td class="price">
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td class="subtotal">
+                    @((item.Price * item.Quantity).ToString("0.00")) $
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Image))
+                    {
+                        <img src="~/upload/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                    }
+                    else
+                    {
+                        <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px;height: 50px;" />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Category.Name)
+                </td>
+                <td class="number-of-items">
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @{
+                        totalSum += item.Price * item.Quantity;
+                    }
+                </td>
+            </tr>
+
+        }
+    </tbody>
+</table>
+
+
+<h3 id="total">Total: @totalSum.ToString("0.00") $</h3>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <form enctype="multipart/form-data" asp-action="Order">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label for="City" class="control-label">City</label>
+                <input type="text" id="City" name="City" class="form-control" />
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="PostalCode" class="control-label">Postal Code</label>
+                <input type="text" id="PostalCode" name="PostalCode" class="form-control" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Street" class="control-label">Street</label>
+                <input type="text" id="Street" name="Street" class="form-control" />
+                <span asp-validation-for="Street" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="BuildingNumber" class="control-label">Building Number</label>
+                <input type="text" id="BuildingNumber" name="BuildingNumber" class="form-control" />
+                <span asp-validation-for="BuildingNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="PaymentMethod" class="control-label">Payment Method</label>
+                <select id="PaymentMethod" name="PaymentMethod"
+                        asp-items="@(new SelectList(ViewBag.AvailablePaymentMethods, "Value", "Text"))"
+                        class="form-control">
+                </select>
+                <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Order" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+

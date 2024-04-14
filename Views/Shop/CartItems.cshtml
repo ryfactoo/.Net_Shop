@@ -1,0 +1,199 @@
+﻿@model IEnumerable<DotNet_lab_lista_10.ViewModesl.ArticleCartItemViewModel>
+
+@{
+    ViewData["Title"] = "Cart";
+    double totalSum = 0F;
+}
+
+<h1>Cart</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                SumPrice
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Category)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr id="item-@item.Id">
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td class="price">
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td class="subtotal">
+                @((item.Price * item.Quantity).ToString("0.00")) $
+            </td>
+            <td>
+                @if (!string.IsNullOrEmpty(item.Image))
+                {
+                    <img src="~/upload/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                }
+                else
+                {
+                    <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px;height: 50px;" />
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Name)
+            </td>
+            <td class="number-of-items">
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                <a asp-controller="Shop" asp-action="CartIncrement" asp-route-articleId="@item.Id">+</a> |
+                <a asp-controller="Shop" asp-action="CartDecrement" asp-route-articleId="@item.Id">-</a> |
+                <a asp-controller="Shop" asp-action="RemoveFromCart" asp-route-articleId="@item.Id">Remove</a>
+
+
+                   @*  <a onclick="add(event, @item.Id)" href="javascript:void(0)">+</a> |
+                    <a onclick="remove(event, @item.Id)" href="javascript:void(0)">-</a> |
+                    <a onclick="removeAllItems(event, @item.Id)" href="javascript:void(0)">Remove</a>  *@
+
+
+
+            </td>
+            <td>
+            @{
+                totalSum += item.Price * item.Quantity;
+            }
+            </td>
+        </tr>
+
+}
+    </tbody>
+</table>
+
+
+@if (Model.Any())
+{
+    <h3 id="total">Total: @totalSum.ToString("0.00") $</h3>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+    <div>
+        <a href="@Url.Action("Order", "Shop")">
+            <button class="btn btn-primary" type="button">Order</button>
+        </a>
+
+    </div>
+    }
+}
+else
+{
+    <p class="text-danger">Cart is empty</p>
+}
+
+
+
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        var add = function (event, id) {
+            var itemRow = document.getElementById(`item-${id}`);
+            var quantityCell = itemRow.getElementsByClassName("number-of-items")[0];
+            var quantity = 1 + parseInt(quantityCell.textContent);
+            quantityCell.textContent = quantity;
+
+            setCartCookie(id, quantity);
+            updateSubtotal(itemRow);
+            updateTotalCost();
+        };
+
+        var remove = function (event, id) {
+            var itemRow = document.getElementById(`item-${id}`);
+            var quantityCell = itemRow.getElementsByClassName("number-of-items")[0];
+            var quantity = parseInt(quantityCell.textContent) - 1;
+
+            if (quantity < 1) {
+                removeAllItems(event, id);
+                return;
+            }
+            else {
+                quantityCell.textContent = quantity;
+            }
+
+            setCartCookie(id, quantity);
+            updateSubtotal(itemRow);
+            updateTotalCost();
+        };
+
+        var removeAllItems = function (event, id) {
+            var itemRow = document.getElementById(`item-${id}`);
+            itemRow.remove();
+
+            setCartCookie(id, 0, true);
+            updateTotalCost();
+            reloadIfEmpty();
+        };
+
+        var updateSubtotal = function (itemRow) {
+            var priceCell = itemRow.getElementsByClassName("price")[0];
+            var quantityCell = itemRow.getElementsByClassName("number-of-items")[0];
+
+            var subtotalCell = itemRow.getElementsByClassName("subtotal")[0];
+            var subtotal = parseFloat(priceCell.textContent) * parseFloat(quantityCell.textContent);
+
+            subtotalCell.textContent = (subtotal.toFixed(2) +  " $");
+        };
+
+        var updateTotalCost = function () {
+            var subtotals = document.getElementsByClassName("subtotal");
+            var sum = 0;
+
+            for (let subtotal of subtotals) {
+                sum = sum + parseFloat(subtotal.textContent);
+            }
+
+            document.getElementById("total").textContent = `Total: ${sum.toFixed(2)} $`;
+        };
+
+        var setCartCookie = function (id, value, remove = false) {
+            var date = new Date();
+
+            if (remove) {
+                date.setDate(date.getDate() - 1);
+            }
+            else {
+                date.setDate(date.getDate() + 7);
+            }
+
+            let expires = "expires=" + date.toUTCString();
+            document.cookie = `${id}` + "=" + value + ";" + expires + ";path=/";
+        };
+
+        var reloadIfEmpty = function () {
+            var numberOfArticles = document.getElementsByClassName("price").length;
+
+            if (numberOfArticles == 0) {
+                location.reload();
+            }
+        };
+
+    </script>
+}

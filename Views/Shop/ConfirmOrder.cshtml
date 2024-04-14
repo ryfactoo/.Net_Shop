@@ -1,0 +1,100 @@
+﻿@model DotNet_lab_lista_10.ViewModesl.ShippingViewModel
+
+@{
+    ViewData["Title"] = "Confirm order";
+    double totalSum = 0F;
+}
+
+<h1>Confirm order</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Price)
+            </th>
+            <th>
+                SumPrice
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Category)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CartItems.FirstOrDefault().Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(Model.CartItems != null){
+            @foreach (var item in Model.CartItems)
+            {
+                <tr id="item-@item.Id">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td class="price">
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                    <td class="subtotal">
+                        @((item.Price * item.Quantity).ToString("0.00")) $
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.Image))
+                        {
+                            <img src="~/upload/@item.Image" alt="Image" style="width: 50px; height: 50px;" />
+                        }
+                        else
+                        {
+                            <img src="~/images/noPhoto.jpg" alt="Default Image" style="width: 50px;height: 50px;" />
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Category.Name)
+                    </td>
+                    <td class="number-of-items">
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                    <td>
+                        @{
+                            totalSum += item.Price * item.Quantity;
+                        }
+                    </td>
+            </tr>
+            }
+
+        }
+    </tbody>
+</table>
+
+
+<h2 id="total">Total: @totalSum.ToString("0.00") $</h2>
+<br>
+<br>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Order Details</h2>
+        <p><strong>City:</strong> @Model.City</p>
+        <p><strong>Postal Code:</strong> @Model.PostalCode</p>
+        <p><strong>Street:</strong> @Model.Street</p>
+        <p><strong>Building Number:</strong> @Model.BuildingNumber</p>
+        <p><strong>Payment Method:</strong> @Model.PaymentMethod</p>
+    </div>
+</div>
+
+<div>
+    <a href="@Url.Action("ConfirmOrder", "Shop")">
+        <button class="btn btn-primary" type="button">Confirm order</button>
+    </a>
+
+</div>
+
+
